@@ -11,7 +11,7 @@ import com.travel.common.exception.BusinessException;
 import com.travel.entity.User;
 import com.travel.mapper.UserMapper;
 import com.travel.utils.JwtUtils;
-import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
@@ -20,6 +20,10 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    private static final String BCRYPT_PREFIX_2A = "$2a$";
+    private static final String BCRYPT_PREFIX_2B = "$2b$";
+    private static final String BCRYPT_PREFIX_2Y = "$2y$";
 
     private final UserMapper userMapper;
     private final JwtUtils jwtUtils;
@@ -38,10 +42,11 @@ public class UserService {
         if (user == null) {
             throw new BusinessException("用户名不存在");
         }
-        // 第二步：校验密码（数据库里是 MD5）
-        if (!DigestUtil.md5Hex(password).equals(user.getPassword())) {
+        // 第二步：校验密码（数据库仅支持 BCrypt）
+        if (!matchesPassword(password, user.getPassword())) {
             throw new BusinessException("密码错误");
         }
+
         // 第三步：校验账号状态，禁用账号禁止登录
         if (user.getStatus() == Constants.STATUS_DISABLED) {
             throw new BusinessException("账号已被禁用");
@@ -65,7 +70,7 @@ public class UserService {
         if (existing != null) {
             throw new BusinessException("用户名已存在");
         }
-        user.setPassword(DigestUtil.md5Hex(user.getPassword()));
+        user.setPassword(encodePassword(user.getPassword()));
         user.setStatus(Constants.STATUS_ENABLED);
         if (user.getRole() == null) {
             user.setRole(Constants.ROLE_USER);
@@ -100,10 +105,10 @@ public class UserService {
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
         User user = userMapper.selectById(userId);
         // 改密码必须先验证旧密码，避免被越权修改
-        if (!DigestUtil.md5Hex(oldPassword).equals(user.getPassword())) {
+        if (!matchesPassword(oldPassword, user.getPassword())) {
             throw new BusinessException("原密码错误");
         }
-        user.setPassword(DigestUtil.md5Hex(newPassword));
+        user.setPassword(encodePassword(newPassword));
         userMapper.updateById(user);
     }
 
@@ -145,7 +150,7 @@ public class UserService {
         if (existing != null) {
             throw new BusinessException("用户名已存在");
         }
-        user.setPassword(DigestUtil.md5Hex(user.getPassword()));
+        user.setPassword(encodePassword(user.getPassword()));
         user.setStatus(Constants.STATUS_ENABLED);
         userMapper.insert(user);
     }
@@ -156,11 +161,38 @@ public class UserService {
             throw new BusinessException("用户不存在");
         }
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            user.setPassword(DigestUtil.md5Hex(user.getPassword()));
+            user.setPassword(encodePassword(user.getPassword()));
         } else {
             user.setPassword(existing.getPassword());
         }
         userMapper.updateById(user);
+    }
+
+    private String encodePassword(String rawPassword) {
+        return BCrypt.hashpw(rawPassword, BCrypt.gensalt(10));
+    }
+
+    private boolean matchesPassword(String rawPassword, String storedPassword) {
+        if (rawPassword == null || storedPassword == null || storedPassword.isEmpty()) {
+            return false;
+        }
+        if (!isBcryptHash(storedPassword)) {
+            return false;
+        }
+        try {
+            return BCrypt.checkpw(rawPassword, storedPassword);
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private boolean isBcryptHash(String password) {
+        if (password == null) {
+            return false;
+        }
+        return password.startsWith(BCRYPT_PREFIX_2A)
+                || password.startsWith(BCRYPT_PREFIX_2B)
+                || password.startsWith(BCRYPT_PREFIX_2Y);
     }
 
     /**

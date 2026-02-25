@@ -864,4 +864,162 @@ INSERT INTO provider_qualification (user_id, company_name, license_no, contact_p
 
 SELECT '轮播图、服务商资质和新目的地数据插入完成！' AS message;
 
+-- ===== Foreign Key Constraints =====
+-- This section adds explicit FK relationships for ER-diagram generation and data integrity.
+
+ALTER TABLE provider_qualification
+  ADD CONSTRAINT fk_provider_qualification_user
+  FOREIGN KEY (user_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE attraction
+  ADD CONSTRAINT fk_attraction_destination
+  FOREIGN KEY (destination_id) REFERENCES destination(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE hotel
+  ADD CONSTRAINT fk_hotel_destination
+  FOREIGN KEY (destination_id) REFERENCES destination(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE hotel
+  ADD CONSTRAINT fk_hotel_provider
+  FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE transport
+  ADD CONSTRAINT fk_transport_provider
+  FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE travel_product
+  ADD CONSTRAINT fk_travel_product_provider
+  FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE travel_product
+  ADD CONSTRAINT fk_travel_product_destination
+  FOREIGN KEY (destination_id) REFERENCES destination(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE product_daily_stock
+  ADD CONSTRAINT fk_product_daily_stock_product
+  FOREIGN KEY (product_id) REFERENCES travel_product(id)
+  ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE travel_day_plan
+  ADD CONSTRAINT fk_travel_day_plan_product
+  FOREIGN KEY (product_id) REFERENCES travel_product(id)
+  ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE travel_day_plan
+  ADD CONSTRAINT fk_travel_day_plan_hotel
+  FOREIGN KEY (hotel_id) REFERENCES hotel(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE travel_day_plan
+  ADD CONSTRAINT fk_travel_day_plan_transport
+  FOREIGN KEY (transport_id) REFERENCES transport(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE custom_request
+  ADD CONSTRAINT fk_custom_request_user
+  FOREIGN KEY (user_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE custom_request
+  ADD CONSTRAINT fk_custom_request_provider
+  FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE custom_request
+  ADD CONSTRAINT fk_custom_request_destination
+  FOREIGN KEY (destination_id) REFERENCES destination(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE custom_plan
+  ADD CONSTRAINT fk_custom_plan_request
+  FOREIGN KEY (request_id) REFERENCES custom_request(id)
+  ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE custom_plan
+  ADD CONSTRAINT fk_custom_plan_provider
+  FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE travel_order
+  ADD CONSTRAINT fk_travel_order_user
+  FOREIGN KEY (user_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE travel_order
+  ADD CONSTRAINT fk_travel_order_provider
+  FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE travel_order
+  ADD CONSTRAINT fk_travel_order_product
+  FOREIGN KEY (product_id) REFERENCES travel_product(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE travel_order
+  ADD CONSTRAINT fk_travel_order_custom_plan
+  FOREIGN KEY (custom_plan_id) REFERENCES custom_plan(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
+ALTER TABLE chat_message
+  ADD CONSTRAINT fk_chat_message_sender
+  FOREIGN KEY (sender_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE chat_message
+  ADD CONSTRAINT fk_chat_message_receiver
+  FOREIGN KEY (receiver_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE chat_session
+  ADD CONSTRAINT fk_chat_session_user
+  FOREIGN KEY (user_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE chat_session
+  ADD CONSTRAINT fk_chat_session_provider
+  FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE user_behavior
+  ADD CONSTRAINT fk_user_behavior_user
+  FOREIGN KEY (user_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE user_behavior
+  ADD CONSTRAINT fk_user_behavior_product
+  FOREIGN KEY (product_id) REFERENCES travel_product(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE user_favorite
+  ADD CONSTRAINT fk_user_favorite_user
+  FOREIGN KEY (user_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE user_favorite
+  ADD CONSTRAINT fk_user_favorite_product
+  FOREIGN KEY (product_id) REFERENCES travel_product(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE review
+  ADD CONSTRAINT fk_review_user
+  FOREIGN KEY (user_id) REFERENCES sys_user(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE review
+  ADD CONSTRAINT fk_review_product
+  FOREIGN KEY (product_id) REFERENCES travel_product(id)
+  ON UPDATE CASCADE ON DELETE RESTRICT;
+
+ALTER TABLE review
+  ADD CONSTRAINT fk_review_order
+  FOREIGN KEY (order_id) REFERENCES travel_order(id)
+  ON UPDATE CASCADE ON DELETE SET NULL;
+
 

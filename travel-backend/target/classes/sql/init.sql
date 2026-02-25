@@ -1,4 +1,4 @@
--- init 相关 SQL，先保证语句正确，后面再做性能优化。
+﻿-- init 相关 SQL，先保证语句正确，后面再做性能优化。
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS travel_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE travel_db;
@@ -252,18 +252,18 @@ CREATE TABLE IF NOT EXISTS banner (
 
 -- 管理员账号 (密码: admin123)
 INSERT INTO sys_user (username, password, nickname, role, status) VALUES
-('admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员', 0, 1);
+('admin', '$2a$10$IPUN91ncI5s6o8ISoF8BTut8y0twoHexN5jcEO2yJkDIpST04L6fi', '系统管理员', 0, 1);
 
 -- 测试游客账号 (密码: 123456)
 INSERT INTO sys_user (username, password, nickname, phone, role, status) VALUES
-('user1', 'e10adc3949ba59abbe56e057f20f883e', '张三', '13800138001', 1, 1),
-('user2', 'e10adc3949ba59abbe56e057f20f883e', '李四', '13800138002', 1, 1),
-('user3', 'e10adc3949ba59abbe56e057f20f883e', '王五', '13800138003', 1, 1);
+('user1', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '张三', '13800138001', 1, 1),
+('user2', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '李四', '13800138002', 1, 1),
+('user3', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '王五', '13800138003', 1, 1);
 
 -- 测试服务商账号 (密码: 123456)
 INSERT INTO sys_user (username, password, nickname, phone, role, status) VALUES
-('provider1', 'e10adc3949ba59abbe56e057f20f883e', '阳光旅行社', '13900139001', 2, 1),
-('provider2', 'e10adc3949ba59abbe56e057f20f883e', '环球旅游', '13900139002', 2, 1);
+('provider1', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '阳光旅行社', '13900139001', 2, 1),
+('provider2', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '环球旅游', '13900139002', 2, 1);
 
 -- 目的地数据
 INSERT INTO destination (name, province, city, description, hot_score, longitude, latitude) VALUES
@@ -320,3 +320,5 @@ INSERT INTO banner (title, image_url, link_url, sort_order, status) VALUES
 ('三亚热带海岛游', '/uploads/banner/sanya.jpg', '/product/1', 1, 1),
 ('丽江古城深度游', '/uploads/banner/lijiang.jpg', '/product/2', 2, 1),
 ('杭州西湖自由行', '/uploads/banner/hangzhou.jpg', '/product/3', 3, 1);
+
+

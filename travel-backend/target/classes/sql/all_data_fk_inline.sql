@@ -1,9 +1,7 @@
-﻿-- all_data 相关 SQL，先保证语句正确，后面再做性能优化。
--- 创建数据库
+﻿-- Schema only, with inline foreign keys for ER tools
 CREATE DATABASE IF NOT EXISTS travel_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE travel_db;
 
--- 1. 用户表
 CREATE TABLE IF NOT EXISTS sys_user (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(50) UNIQUE NOT NULL,
@@ -12,13 +10,27 @@ CREATE TABLE IF NOT EXISTS sys_user (
   avatar VARCHAR(255),
   phone VARCHAR(20),
   email VARCHAR(100),
-  role TINYINT NOT NULL COMMENT '0-管理员 1-游客 2-服务商',
-  status TINYINT DEFAULT 1 COMMENT '0-禁用 1-正常',
+  role TINYINT NOT NULL COMMENT '0-admin 1-user 2-provider',
+  status TINYINT DEFAULT 1 COMMENT '0-disabled 1-enabled',
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
   update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 2. 服务商资质表
+CREATE TABLE IF NOT EXISTS destination (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  province VARCHAR(50),
+  city VARCHAR(50),
+  description TEXT,
+  cover_image VARCHAR(255),
+  images TEXT COMMENT 'JSON array',
+  longitude DECIMAL(10,6),
+  latitude DECIMAL(10,6),
+  hot_score INT DEFAULT 0,
+  status TINYINT DEFAULT 1,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS provider_qualification (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT NOT NULL,
@@ -27,28 +39,14 @@ CREATE TABLE IF NOT EXISTS provider_qualification (
   license_image VARCHAR(255),
   contact_person VARCHAR(50),
   contact_phone VARCHAR(20),
-  audit_status TINYINT DEFAULT 0 COMMENT '0-待审核 1-通过 2-拒绝',
+  audit_status TINYINT DEFAULT 0 COMMENT '0-pending 1-approved 2-rejected',
   audit_remark VARCHAR(255),
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_provider_qualification_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 3. 目的地表
-CREATE TABLE IF NOT EXISTS destination (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(100) NOT NULL,
-  province VARCHAR(50),
-  city VARCHAR(50),
-  description TEXT,
-  cover_image VARCHAR(255),
-  images TEXT COMMENT '多图JSON数组',
-  longitude DECIMAL(10,6),
-  latitude DECIMAL(10,6),
-  hot_score INT DEFAULT 0,
-  status TINYINT DEFAULT 1,
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 4. 景点表
 CREATE TABLE IF NOT EXISTS attraction (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   destination_id BIGINT NOT NULL,
@@ -60,12 +58,14 @@ CREATE TABLE IF NOT EXISTS attraction (
   address VARCHAR(255),
   longitude DECIMAL(10,6),
   latitude DECIMAL(10,6),
-  tags VARCHAR(255) COMMENT '标签,逗号分隔',
+  tags VARCHAR(255) COMMENT 'comma separated tags',
   status TINYINT DEFAULT 1,
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_attraction_destination
+    FOREIGN KEY (destination_id) REFERENCES destination(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 5. 酒店表
 CREATE TABLE IF NOT EXISTS hotel (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   destination_id BIGINT NOT NULL,
@@ -80,23 +80,30 @@ CREATE TABLE IF NOT EXISTS hotel (
   price_min DECIMAL(10,2),
   price_max DECIMAL(10,2),
   status TINYINT DEFAULT 1,
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_hotel_destination
+    FOREIGN KEY (destination_id) REFERENCES destination(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_hotel_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 6. 交通资源表
 CREATE TABLE IF NOT EXISTS transport (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  type TINYINT COMMENT '0-飞机 1-火车 2-大巴 3-租车',
+  type TINYINT COMMENT '0-flight 1-train 2-bus 3-car-rental',
   departure VARCHAR(100),
   arrival VARCHAR(100),
   price DECIMAL(10,2),
   description TEXT,
   provider_id BIGINT,
   status TINYINT DEFAULT 1,
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_transport_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 7. 旅游产品表
 CREATE TABLE IF NOT EXISTS travel_product (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   provider_id BIGINT NOT NULL,
@@ -105,21 +112,26 @@ CREATE TABLE IF NOT EXISTS travel_product (
   cover_image VARCHAR(255),
   images TEXT,
   destination_id BIGINT,
-  duration INT COMMENT '行程天数',
+  duration INT COMMENT 'days',
   price DECIMAL(10,2),
   original_price DECIMAL(10,2),
-  product_type TINYINT COMMENT '0-跟团游 1-自由行 2-当地向导 3-特色路线',
+  product_type TINYINT COMMENT '0-group 1-free 2-local-guide 3-user-route',
   tags VARCHAR(255),
-  include_items TEXT COMMENT '费用包含',
-  exclude_items TEXT COMMENT '费用不含',
+  include_items TEXT,
+  exclude_items TEXT,
   stock INT DEFAULT 999,
   sales INT DEFAULT 0,
-  status TINYINT DEFAULT 1 COMMENT '0-下架 1-上架',
+  status TINYINT DEFAULT 1 COMMENT '0-offline 1-online',
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_travel_product_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_travel_product_destination
+    FOREIGN KEY (destination_id) REFERENCES destination(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 7.1 产品按日库存表
 CREATE TABLE IF NOT EXISTS product_daily_stock (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   product_id BIGINT NOT NULL,
@@ -127,15 +139,17 @@ CREATE TABLE IF NOT EXISTS product_daily_stock (
   stock_total INT NOT NULL DEFAULT 0,
   stock_available INT NOT NULL DEFAULT 0,
   warn_threshold INT DEFAULT 0,
-  status TINYINT DEFAULT 1 COMMENT '0-停用 1-启用',
+  status TINYINT DEFAULT 1 COMMENT '0-disabled 1-enabled',
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
   update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_product_date (product_id, stock_date),
   INDEX idx_product (product_id),
-  INDEX idx_stock_date (stock_date)
+  INDEX idx_stock_date (stock_date),
+  CONSTRAINT fk_product_daily_stock_product
+    FOREIGN KEY (product_id) REFERENCES travel_product(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 8. 行程日计划表
 CREATE TABLE IF NOT EXISTS travel_day_plan (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   product_id BIGINT NOT NULL,
@@ -144,10 +158,18 @@ CREATE TABLE IF NOT EXISTS travel_day_plan (
   description TEXT,
   attraction_ids VARCHAR(255),
   hotel_id BIGINT,
-  transport_id BIGINT
+  transport_id BIGINT,
+  CONSTRAINT fk_travel_day_plan_product
+    FOREIGN KEY (product_id) REFERENCES travel_product(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_travel_day_plan_hotel
+    FOREIGN KEY (hotel_id) REFERENCES hotel(id)
+    ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_travel_day_plan_transport
+    FOREIGN KEY (transport_id) REFERENCES transport(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 9. 定制需求表
 CREATE TABLE IF NOT EXISTS custom_request (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT NOT NULL,
@@ -161,11 +183,19 @@ CREATE TABLE IF NOT EXISTS custom_request (
   people_count INT,
   preferences TEXT,
   interest_tags VARCHAR(255),
-  status TINYINT DEFAULT 0 COMMENT '0-待处理 1-方案已出 2-已确认 3-已取消',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  status TINYINT DEFAULT 0 COMMENT '0-pending 1-planned 2-accepted 3-cancelled',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_custom_request_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_custom_request_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_custom_request_destination
+    FOREIGN KEY (destination_id) REFERENCES destination(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 10. 定制方案表
 CREATE TABLE IF NOT EXISTS custom_plan (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   request_id BIGINT NOT NULL,
@@ -173,12 +203,17 @@ CREATE TABLE IF NOT EXISTS custom_plan (
   title VARCHAR(200),
   description TEXT,
   total_price DECIMAL(10,2),
-  day_plans TEXT COMMENT '每日行程JSON',
-  status TINYINT DEFAULT 0 COMMENT '0-待确认 1-已接受 2-已拒绝',
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  day_plans TEXT COMMENT 'daily plan JSON',
+  status TINYINT DEFAULT 0 COMMENT '0-pending 1-accepted 2-rejected',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_custom_plan_request
+    FOREIGN KEY (request_id) REFERENCES custom_request(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_custom_plan_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 11. 订单表
 CREATE TABLE IF NOT EXISTS travel_order (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   order_no VARCHAR(50) UNIQUE NOT NULL,
@@ -186,9 +221,9 @@ CREATE TABLE IF NOT EXISTS travel_order (
   provider_id BIGINT NOT NULL,
   product_id BIGINT,
   custom_plan_id BIGINT,
-  order_type TINYINT COMMENT '0-产品订单 1-定制订单',
+  order_type TINYINT COMMENT '0-product-order 1-custom-order',
   total_amount DECIMAL(10,2),
-  status TINYINT DEFAULT 0 COMMENT '0-待付款 1-已付款 2-进行中 3-已完成 4-已取消 5-退款中 6-已退款',
+  status TINYINT DEFAULT 0 COMMENT '0-unpaid 1-paid 2-progress 3-finished 4-cancelled 5-refunding 6-refunded',
   people_count INT,
   travel_date DATE,
   contact_name VARCHAR(50),
@@ -196,64 +231,103 @@ CREATE TABLE IF NOT EXISTS travel_order (
   remark TEXT,
   pay_time DATETIME,
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_travel_order_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_travel_order_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_travel_order_product
+    FOREIGN KEY (product_id) REFERENCES travel_product(id)
+    ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_travel_order_custom_plan
+    FOREIGN KEY (custom_plan_id) REFERENCES custom_plan(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 12. 聊天消息表
 CREATE TABLE IF NOT EXISTS chat_message (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   sender_id BIGINT NOT NULL,
   receiver_id BIGINT NOT NULL,
   content TEXT NOT NULL,
-  msg_type TINYINT DEFAULT 0 COMMENT '0-文本 1-图片',
+  msg_type TINYINT DEFAULT 0 COMMENT '0-text 1-image',
   is_read TINYINT DEFAULT 0,
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_chat_message_sender
+    FOREIGN KEY (sender_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_chat_message_receiver
+    FOREIGN KEY (receiver_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 13. 会话表
 CREATE TABLE IF NOT EXISTS chat_session (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT NOT NULL,
   provider_id BIGINT NOT NULL,
   last_message TEXT,
   last_time DATETIME,
-  unread_count INT DEFAULT 0
+  unread_count INT DEFAULT 0,
+  CONSTRAINT fk_chat_session_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_chat_session_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 14. 用户行为记录表
 CREATE TABLE IF NOT EXISTS user_behavior (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT NOT NULL,
   product_id BIGINT NOT NULL,
-  behavior_type TINYINT COMMENT '0-浏览 1-收藏 2-购买 3-评分',
+  behavior_type TINYINT COMMENT '0-view 1-favorite 2-buy 3-review',
   score DECIMAL(3,1),
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_user (user_id),
-  INDEX idx_product (product_id)
+  INDEX idx_product (product_id),
+  CONSTRAINT fk_user_behavior_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_user_behavior_product
+    FOREIGN KEY (product_id) REFERENCES travel_product(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 15. 用户收藏表
 CREATE TABLE IF NOT EXISTS user_favorite (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT NOT NULL,
   product_id BIGINT NOT NULL,
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uk_user_product (user_id, product_id)
+  UNIQUE KEY uk_user_product (user_id, product_id),
+  CONSTRAINT fk_user_favorite_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_user_favorite_product
+    FOREIGN KEY (product_id) REFERENCES travel_product(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 16. 评价表
 CREATE TABLE IF NOT EXISTS review (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT NOT NULL,
   product_id BIGINT NOT NULL,
   order_id BIGINT,
-  rating TINYINT COMMENT '1-5星',
+  rating TINYINT COMMENT '1-5',
   content TEXT,
   images TEXT,
-  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_review_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_review_product
+    FOREIGN KEY (product_id) REFERENCES travel_product(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_review_order
+    FOREIGN KEY (order_id) REFERENCES travel_order(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 17. 轮播图表
 CREATE TABLE IF NOT EXISTS banner (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(100),
@@ -264,9 +338,7 @@ CREATE TABLE IF NOT EXISTS banner (
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ===== 初始数据 =====
-
--- 管理员账号 (密码: admin123)
+-- ===== Seed Data =====
 INSERT INTO sys_user (username, password, nickname, role, status) VALUES
 ('admin', '$2a$10$IPUN91ncI5s6o8ISoF8BTut8y0twoHexN5jcEO2yJkDIpST04L6fi', '系统管理员', 0, 1);
 

@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -15,18 +14,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * 基于约束的行程自动生成算法服务
- * 
- * 核心思想：根据用户输入的预算、天数、目的地等约束条件，自动生成结构化旅游方案
- * 
- * 算法流程：
- * 1. 计算每日预算上限（总预算 ÷ 天数）
- * 2. 通过目的地筛选出符合条件且已上架的产品和景点
- * 3. 按产品类型分组，采用轮换策略分配资源
- * 4. 采用贪心策略为每一天分配产品——优先选择符合用户兴趣且价格适中的产品
- * 5. 使用"冷却期"机制，允许资源在一定间隔后重复使用，确保长途旅行也有丰富安排
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor

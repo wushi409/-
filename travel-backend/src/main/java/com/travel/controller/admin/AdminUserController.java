@@ -1,3 +1,6 @@
+/**
+ * 管理员用户与资质审核接口。
+ */
 package com.travel.controller.admin;
 
 import com.travel.common.Constants;
@@ -12,12 +15,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 类说明：AdminUserController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api/admin")
 @RequireRole({Constants.ROLE_ADMIN})
@@ -35,24 +32,12 @@ public class AdminUserController {
         return Result.success(userService.listUsers(page, size, keyword, role));
     }
 
-    /**
-     * 方法说明：addUser
-     * 1. 负责处理 addUser 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PostMapping("/users")
     public Result<?> addUser(@RequestBody User user) {
         userService.addUser(user);
         return Result.success("添加成功");
     }
 
-    /**
-     * 方法说明：updateUser
-     * 1. 负责处理 updateUser 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PutMapping("/users/{id}")
     public Result<?> updateUser(@PathVariable Long id, @RequestBody User user) {
         user.setId(id);
@@ -60,24 +45,12 @@ public class AdminUserController {
         return Result.success("更新成功");
     }
 
-    /**
-     * 方法说明：updateStatus
-     * 1. 负责处理 updateStatus 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PutMapping("/users/{id}/status")
     public Result<?> updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, Integer> params) {
         userService.updateStatus(id, params.get("status"));
         return Result.success("操作成功");
     }
 
-    /**
-     * 方法说明：deleteUser
-     * 1. 负责处理 deleteUser 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @DeleteMapping("/users/{id}")
     public Result<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
@@ -86,6 +59,13 @@ public class AdminUserController {
 
     // ===== 资质审核 =====
 
+    /**
+     * 管理员查看资质审核列表。
+     *
+     * 用法：
+     * 1. 可按 auditStatus 筛选（待审核/已通过/已驳回）；
+     * 2. 默认按创建时间倒序，优先处理最新提交。
+     */
     @GetMapping("/qualifications")
     public Result<?> listQualifications(@RequestParam(defaultValue = "1") Integer page,
                                          @RequestParam(defaultValue = "10") Integer size,
@@ -100,10 +80,11 @@ public class AdminUserController {
     }
 
     /**
-     * 方法说明：audit
-     * 1. 负责处理 audit 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 管理员执行审核动作。
+     *
+     * 前端会传：
+     * 1. auditStatus：审核结果（通过/驳回）；
+     * 2. auditRemark：审核意见（给服务商看的反馈）。
      */
     @PutMapping("/qualifications/{id}/audit")
     public Result<?> audit(@PathVariable Long id, @RequestBody java.util.Map<String, Object> params) {

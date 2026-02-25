@@ -20,7 +20,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,14 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * 用户“独立路线”服务。
- *
- * 约定说明：
- * 1. 独立路线复用 `travel_product` 存储，使用 `productType=3` + `status=0` + 固定标签区分；
- * 2. 每日行程存储在 `travel_day_plan`，通过 productId 关联；
- * 3. 仅允许创建者本人对路线进行查看/编辑/删除。
- */
 @Service
 @RequiredArgsConstructor
 public class UserRouteService {
@@ -433,13 +424,13 @@ public class UserRouteService {
         private java.math.BigDecimal longitude;
         private java.math.BigDecimal latitude;
 
-        public ResourceOption(Long id, String name, BigDecimal price) {
+    public ResourceOption(Long id, String name, BigDecimal price) {
             this.id = id;
             this.name = name;
             this.price = price;
         }
 
-        public ResourceOption(Long id, String name, BigDecimal price,
+    public ResourceOption(Long id, String name, BigDecimal price,
                               java.math.BigDecimal longitude, java.math.BigDecimal latitude) {
             this.id = id;
             this.name = name;

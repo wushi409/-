@@ -12,16 +12,9 @@ import com.travel.service.RecommendService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 类说明：FavoriteController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api/favorites")
 @RequireRole({Constants.ROLE_USER})
@@ -32,12 +25,6 @@ public class FavoriteController {
     private final TravelProductMapper productMapper;
     private final RecommendService recommendService;
 
-    /**
-     * 方法说明：toggle
-     * 1. 负责处理 toggle 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PostMapping
     public Result<?> toggle(HttpServletRequest request, @RequestBody java.util.Map<String, Long> params) {
         Long userId = (Long) request.getAttribute("userId");
@@ -61,12 +48,6 @@ public class FavoriteController {
         }
     }
 
-    /**
-     * 方法说明：list
-     * 1. 负责处理 list 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @GetMapping
     public Result<?> list(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -81,12 +62,6 @@ public class FavoriteController {
         return Result.success(productMapper.selectBatchIds(productIds));
     }
 
-    /**
-     * 方法说明：check
-     * 1. 负责处理 check 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @GetMapping("/check/{productId}")
     public Result<?> check(HttpServletRequest request, @PathVariable Long productId) {
         Long userId = (Long) request.getAttribute("userId");

@@ -1,3 +1,6 @@
+/**
+ * 订单业务主服务：创建订单、状态流转、库存与退款联动。
+ */
 package com.travel.service;
 
 import cn.hutool.core.util.IdUtil;
@@ -14,18 +17,9 @@ import com.travel.mapper.TravelProductMapper;
 import com.travel.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * 订单领域服务。
- *
- * 设计说明：
- * 1. 统一承载“下单、支付、履约、退款”的状态流转校验；
- * 2. 在关键状态变更时联动产品总库存/销量与按日库存，保证数据一致性；
- * 3. 提供游客、服务商、管理员三种视角的订单查询能力。
- */
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -204,11 +198,13 @@ public class OrderService {
         if (order == null) {
             throw new BusinessException("order not found");
         }
+        // 先校验订单归属，服务商只能操作自己名下订单
         if (!order.getProviderId().equals(providerId)) {
             throw new BusinessException("no permission to operate this order");
         }
 
         Integer oldStatus = order.getStatus();
+        // 状态机限制：不允许跳步流转，防止出现脏状态
         if (status == Constants.ORDER_IN_PROGRESS && oldStatus != Constants.ORDER_PAID) {
             throw new BusinessException("only paid orders can be started");
         }
@@ -230,6 +226,7 @@ public class OrderService {
      * approve=true 表示同意退款；false 表示驳回并恢复为“已付款”。
      */
     public void providerHandleRefund(Long orderId, Long providerId, boolean approve) {
+        // 退款处理统一复用状态机入口，避免两套逻辑不一致
         providerUpdateStatus(orderId, providerId, approve ? Constants.ORDER_REFUNDED : Constants.ORDER_PAID);
     }
 

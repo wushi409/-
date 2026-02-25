@@ -1,3 +1,7 @@
+/**
+ * BusinessException 公共类。
+ * 放统一返回结构、常量或通用异常定义。
+ */
 package com.travel.common.exception;
 
 import lombok.Getter;

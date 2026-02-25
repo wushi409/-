@@ -14,7 +14,6 @@ import com.travel.mapper.UserBehaviorMapper;
 import com.travel.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,12 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * 类说明：StatService
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @Service
 @RequiredArgsConstructor
 public class StatService {
@@ -43,12 +36,6 @@ public class StatService {
     private final DestinationMapper destinationMapper;
     private final UserBehaviorMapper behaviorMapper;
 
-    /**
-     * 方法说明：overview
-     * 1. 负责处理 overview 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public Map<String, Object> overview() {
         Map<String, Object> data = new HashMap<>();
         data.put("userCount", userMapper.selectCount(
@@ -66,12 +53,6 @@ public class StatService {
         return data;
     }
 
-    /**
-     * 方法说明：orderTrend
-     * 1. 负责处理 orderTrend 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public List<Map<String, Object>> orderTrend(int days) {
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
@@ -94,12 +75,6 @@ public class StatService {
         return result;
     }
 
-    /**
-     * 方法说明：hotDestinations
-     * 1. 负责处理 hotDestinations 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public List<Map<String, Object>> hotDestinations(int limit) {
         List<Destination> destinations = destinationMapper.selectList(
                 new LambdaQueryWrapper<Destination>()
@@ -120,12 +95,6 @@ public class StatService {
         }).collect(Collectors.toList());
     }
 
-    /**
-     * 方法说明：userPreferences
-     * 1. 负责处理 userPreferences 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public List<Map<String, Object>> userPreferences(Integer limit) {
         int topN = (limit == null || limit <= 0) ? 10 : limit;
         List<UserBehavior> behaviors = behaviorMapper.selectList(null);

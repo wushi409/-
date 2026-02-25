@@ -15,16 +15,9 @@ import com.travel.mapper.UserBehaviorMapper;
 import com.travel.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * 类说明：ReviewService
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -34,12 +27,6 @@ public class ReviewService {
     private final UserMapper userMapper;
     private final UserBehaviorMapper behaviorMapper;
 
-    /**
-     * 方法说明：createReview
-     * 1. 负责处理 createReview 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void createReview(Long userId, Review review) {
         if (review == null) {
             throw new BusinessException("invalid review payload");
@@ -82,12 +69,6 @@ public class ReviewService {
         behaviorMapper.insert(behavior);
     }
 
-    /**
-     * 方法说明：listByProduct
-     * 1. 负责处理 listByProduct 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public PageResult<Review> listByProduct(Long productId, Integer page, Integer size) {
         if (productId == null) {
             throw new BusinessException("productId is required");

@@ -11,15 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.math.BigDecimal;
 
-/**
- * 类说明：ProductController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -40,12 +33,6 @@ public class ProductController {
         return Result.success(productService.list(page, size, keyword, destinationId, productType, priceMin, priceMax, sortBy));
     }
 
-    /**
-     * 方法说明：detail
-     * 1. 负责处理 detail 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @GetMapping("/products/{id}")
     public Result<?> detail(@PathVariable Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");

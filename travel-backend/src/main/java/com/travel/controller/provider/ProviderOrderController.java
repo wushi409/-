@@ -1,3 +1,6 @@
+/**
+ * 服务商订单接口：查询订单、推进履约状态、处理退款申请。
+ */
 package com.travel.controller.provider;
 
 import com.travel.common.Constants;
@@ -7,15 +10,8 @@ import com.travel.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 
-/**
- * 类说明：ProviderOrderController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api/provider/orders")
 @RequireRole({Constants.ROLE_PROVIDER})
@@ -24,6 +20,10 @@ public class ProviderOrderController {
 
     private final OrderService orderService;
 
+    /**
+     * 服务商订单列表入口。
+     * 只返回当前登录服务商自己的订单，避免跨商家数据泄露。
+     */
     @GetMapping
     public Result<?> list(HttpServletRequest request,
                           @RequestParam(defaultValue = "1") Integer page,
@@ -33,6 +33,15 @@ public class ProviderOrderController {
         return Result.success(orderService.providerOrders(providerId, page, size, status));
     }
 
+    /**
+     * 服务商更新订单状态入口。
+     *
+     * 常见链路：
+     * 1. 已付款 -> 进行中（开始履约）；
+     * 2. 进行中 -> 已完成（履约完成）。
+     *
+     * 具体状态机校验在 OrderService#providerUpdateStatus。
+     */
     @PutMapping("/{id}/status")
     public Result<?> updateStatus(@PathVariable Long id,
                                   HttpServletRequest request,
@@ -43,10 +52,8 @@ public class ProviderOrderController {
     }
 
     /**
-     * 方法说明：approveRefund
-     * 1. 负责处理 approveRefund 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 同意退款入口。
+     * 会把订单从“退款中”推进到“已退款”，并在 service 内回补库存。
      */
     @PutMapping("/{id}/refund/approve")
     public Result<?> approveRefund(@PathVariable Long id, HttpServletRequest request) {
@@ -56,10 +63,8 @@ public class ProviderOrderController {
     }
 
     /**
-     * 方法说明：rejectRefund
-     * 1. 负责处理 rejectRefund 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 驳回退款入口。
+     * 会把订单从“退款中”恢复为“已付款”。
      */
     @PutMapping("/{id}/refund/reject")
     public Result<?> rejectRefund(@PathVariable Long id, HttpServletRequest request) {

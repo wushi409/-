@@ -1,3 +1,6 @@
+/**
+ * 服务商资质接口：提交资质资料并查询审核状态。
+ */
 package com.travel.controller.provider;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -10,12 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 类说明：ProviderQualificationController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api/provider")
 @RequireRole({Constants.ROLE_PROVIDER})
@@ -25,10 +22,8 @@ public class ProviderQualificationController {
     private final ProviderQualificationMapper qualificationMapper;
 
     /**
-     * 方法说明：detail
-     * 1. 负责处理 detail 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 服务商查看自己最新一条资质记录。
+     * 前端用这个接口回显当前审核状态与审核意见。
      */
     @GetMapping("/qualification")
     public Result<?> detail(HttpServletRequest request) {
@@ -42,10 +37,12 @@ public class ProviderQualificationController {
     }
 
     /**
-     * 方法说明：submit
-     * 1. 负责处理 submit 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 服务商提交/更新资质。
+     *
+     * 规则：
+     * 1. 首次提交：新建记录并置为“待审核”；
+     * 2. 重新提交：覆盖原资料并重置为“待审核”；
+     * 3. 每次重提都清空审核意见，等待管理员重新判定。
      */
     @PostMapping("/qualification")
     public Result<?> submit(HttpServletRequest request, @RequestBody ProviderQualification payload) {
@@ -75,10 +72,7 @@ public class ProviderQualificationController {
     }
 
     /**
-     * 方法说明：applyPayload
-     * 1. 负责处理 applyPayload 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 统一把前端提交字段拷贝到实体，避免在多个分支重复赋值。
      */
     private void applyPayload(ProviderQualification target, ProviderQualification payload) {
         target.setCompanyName(payload.getCompanyName());

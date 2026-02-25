@@ -1,3 +1,6 @@
+/**
+ * 用户领域核心业务：登录注册、资料维护、后台用户管理。
+ */
 package com.travel.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,16 +14,9 @@ import com.travel.utils.JwtUtils;
 import cn.hutool.crypto.digest.DigestUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 类说明：UserService
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -29,24 +25,29 @@ public class UserService {
     private final JwtUtils jwtUtils;
 
     /**
-     * 方法说明：login
-     * 1. 负责处理 login 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 登录主链路（答辩可直接讲这 3 步）。
+     *
+     * 1. 先按用户名查询用户；
+     * 2. 再校验密码和账号状态；
+     * 3. 最后生成 token，返回“token + 脱敏后的用户信息”。
      */
     public Map<String, Object> login(String username, String password) {
+        // 第一步：查用户是否存在
         User user = userMapper.selectOne(
                 new LambdaQueryWrapper<User>().eq(User::getUsername, username));
         if (user == null) {
             throw new BusinessException("用户名不存在");
         }
+        // 第二步：校验密码（数据库里是 MD5）
         if (!DigestUtil.md5Hex(password).equals(user.getPassword())) {
             throw new BusinessException("密码错误");
         }
+        // 第三步：校验账号状态，禁用账号禁止登录
         if (user.getStatus() == Constants.STATUS_DISABLED) {
             throw new BusinessException("账号已被禁用");
         }
 
+        // 第四步：签发 token，并返回前端需要的登录结果
         String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
@@ -55,10 +56,8 @@ public class UserService {
     }
 
     /**
-     * 方法说明：register
-     * 1. 负责处理 register 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 注册主链路。
+     * 先检查用户名唯一，再补默认字段并落库。
      */
     public void register(User user) {
         User existing = userMapper.selectOne(
@@ -74,22 +73,10 @@ public class UserService {
         userMapper.insert(user);
     }
 
-    /**
-     * 方法说明：getById
-     * 1. 负责处理 getById 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public User getById(Long id) {
         return userMapper.selectById(id);
     }
 
-    /**
-     * 方法说明：getInfo
-     * 1. 负责处理 getInfo 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public User getInfo(Long userId) {
         User user = userMapper.selectById(userId);
         if (user == null) {
@@ -98,12 +85,6 @@ public class UserService {
         return sanitizeUser(user);
     }
 
-    /**
-     * 方法说明：updateProfile
-     * 1. 负责处理 updateProfile 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void updateProfile(Long userId, User user) {
         User existing = userMapper.selectById(userId);
         if (existing == null) {
@@ -116,14 +97,9 @@ public class UserService {
         userMapper.updateById(existing);
     }
 
-    /**
-     * 方法说明：updatePassword
-     * 1. 负责处理 updatePassword 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void updatePassword(Long userId, String oldPassword, String newPassword) {
         User user = userMapper.selectById(userId);
+        // 改密码必须先验证旧密码，避免被越权修改
         if (!DigestUtil.md5Hex(oldPassword).equals(user.getPassword())) {
             throw new BusinessException("原密码错误");
         }
@@ -133,12 +109,6 @@ public class UserService {
 
     // ===== 管理员功能 =====
 
-    /**
-     * 方法说明：listUsers
-     * 1. 负责处理 listUsers 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public PageResult<User> listUsers(Integer page, Integer size, String keyword, Integer role) {
         Page<User> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
@@ -156,12 +126,6 @@ public class UserService {
         return new PageResult<>(result.getRecords(), result.getTotal(), result.getCurrent(), result.getSize());
     }
 
-    /**
-     * 方法说明：updateStatus
-     * 1. 负责处理 updateStatus 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void updateStatus(Long userId, Integer status) {
         User user = userMapper.selectById(userId);
         if (user == null) {
@@ -171,22 +135,10 @@ public class UserService {
         userMapper.updateById(user);
     }
 
-    /**
-     * 方法说明：deleteUser
-     * 1. 负责处理 deleteUser 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void deleteUser(Long userId) {
         userMapper.deleteById(userId);
     }
 
-    /**
-     * 方法说明：addUser
-     * 1. 负责处理 addUser 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void addUser(User user) {
         User existing = userMapper.selectOne(
                 new LambdaQueryWrapper<User>().eq(User::getUsername, user.getUsername()));
@@ -198,12 +150,6 @@ public class UserService {
         userMapper.insert(user);
     }
 
-    /**
-     * 方法说明：updateUser
-     * 1. 负责处理 updateUser 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void updateUser(User user) {
         User existing = userMapper.selectById(user.getId());
         if (existing == null) {
@@ -218,10 +164,7 @@ public class UserService {
     }
 
     /**
-     * 方法说明：sanitizeUser
-     * 1. 负责处理 sanitizeUser 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 返回给前端前做脱敏，避免密码字段外泄。
      */
     private User sanitizeUser(User user) {
         user.setPassword(null);

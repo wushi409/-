@@ -1,3 +1,6 @@
+/**
+ * 服务商定制处理接口：查看需求、提交方案、生成智能草稿。
+ */
 package com.travel.controller.provider;
 
 import com.travel.common.Constants;
@@ -10,12 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 类说明：ProviderCustomController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api/provider")
 @RequireRole({Constants.ROLE_PROVIDER})
@@ -34,10 +31,8 @@ public class ProviderCustomController {
     }
 
     /**
-     * 方法说明：submitPlan
-     * 1. 负责处理 submitPlan 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 服务商提交方案入口。
+     * providerId 从登录态获取，避免跨账号提交到别人名下。
      */
     @PostMapping("/custom-plans")
     public Result<?> submitPlan(HttpServletRequest request, @RequestBody CustomPlan plan) {
@@ -48,8 +43,8 @@ public class ProviderCustomController {
     }
 
     /**
-     * 智能生成方案 - 基于约束的行程自动生成算法
-     * 根据用户的定制需求（预算、天数、目的地、兴趣标签）自动生成旅游方案
+     * 智能草稿生成入口（服务商提案前可先用算法产出初稿）。
+     * 生成失败时返回错误信息，便于前端提示人工编辑。
      */
     @PostMapping("/custom-requests/{id}/generate")
     public Result<?> generatePlan(@PathVariable Long id) {

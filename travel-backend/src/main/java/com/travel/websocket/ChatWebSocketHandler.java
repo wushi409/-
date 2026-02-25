@@ -1,3 +1,7 @@
+/**
+ * ChatWebSocketHandler WebSocket 处理类。
+ * 负责实时消息推送和会话通信。
+ */
 package com.travel.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +10,6 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

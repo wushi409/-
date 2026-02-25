@@ -1,3 +1,7 @@
+/**
+ * WebSocketConfig 配置类。
+ * 管理框架级配置和中间件接入。
+ */
 package com.travel.config;
 
 import com.travel.websocket.ChatWebSocketHandler;

@@ -10,19 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/**
- * 协同过滤推荐服务（ItemCF）。
- *
- * 核心思路：
- * 1. 先根据用户行为构建“用户-产品评分矩阵”；
- * 2. 再计算“产品-产品相似度矩阵”（余弦相似度）；
- * 3. 在线推荐时用“用户历史偏好 * 相似度”累计候选分值并排序。
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -1,9 +1,12 @@
+/**
+ * FileUploadUtils 工具类。
+ * 提供可复用的辅助方法。
+ */
 package com.travel.utils;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,13 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * 文件上传工具。
- * 作用：
- * 1. 统一处理扩展名白名单校验；
- * 2. 统一落盘目录策略（按日期分目录）；
- * 3. 在目标目录不可写时提供安全回退，避免接口直接 500。
- */
 @Component
 public class FileUploadUtils {
 

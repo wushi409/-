@@ -1,3 +1,6 @@
+/**
+ * 认证与用户资料接口：登录、注册、个人信息、改密、文件上传。
+ */
 package com.travel.controller;
 
 import com.travel.common.Result;
@@ -8,15 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.Map;
 
-/**
- * 类说明：AuthController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -26,10 +22,8 @@ public class AuthController {
     private final FileUploadUtils fileUploadUtils;
 
     /**
-     * 方法说明：login
-     * 1. 负责处理 login 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 登录接口入口。
+     * 这里只做参数接收与转发，核心校验逻辑在 UserService#login。
      */
     @PostMapping("/auth/login")
     public Result<?> login(@RequestBody Map<String, String> params) {
@@ -39,10 +33,8 @@ public class AuthController {
     }
 
     /**
-     * 方法说明：register
-     * 1. 负责处理 register 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 注册接口入口。
+     * service 里会做“重名校验 + 密码加密 + 默认角色设置”。
      */
     @PostMapping("/auth/register")
     public Result<?> register(@RequestBody User user) {
@@ -50,24 +42,12 @@ public class AuthController {
         return Result.success("注册成功");
     }
 
-    /**
-     * 方法说明：getInfo
-     * 1. 负责处理 getInfo 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @GetMapping("/auth/info")
     public Result<?> getInfo(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return Result.success(userService.getInfo(userId));
     }
 
-    /**
-     * 方法说明：updateProfile
-     * 1. 负责处理 updateProfile 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PutMapping("/user/profile")
     public Result<?> updateProfile(HttpServletRequest request, @RequestBody User user) {
         Long userId = (Long) request.getAttribute("userId");
@@ -75,12 +55,6 @@ public class AuthController {
         return Result.success("更新成功");
     }
 
-    /**
-     * 方法说明：updatePassword
-     * 1. 负责处理 updatePassword 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PutMapping("/user/password")
     public Result<?> updatePassword(HttpServletRequest request, @RequestBody Map<String, String> params) {
         Long userId = (Long) request.getAttribute("userId");
@@ -88,12 +62,6 @@ public class AuthController {
         return Result.success("密码修改成功");
     }
 
-    /**
-     * 方法说明：upload
-     * 1. 负责处理 upload 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PostMapping("/upload")
     public Result<?> upload(@RequestParam("file") MultipartFile file) throws Exception {
         String url = fileUploadUtils.upload(file);

@@ -11,18 +11,11 @@ import com.travel.mapper.UserMapper;
 import com.travel.websocket.ChatWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 类说明：ChatService
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -31,12 +24,6 @@ public class ChatService {
     private final ChatSessionMapper sessionMapper;
     private final UserMapper userMapper;
 
-    /**
-     * 方法说明：sendMessage
-     * 1. 负责处理 sendMessage 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public void sendMessage(ChatMessage message) {
         message.setIsRead(0);
         message.setCreateTime(LocalDateTime.now());
@@ -62,12 +49,6 @@ public class ChatService {
         ChatWebSocketHandler.sendToUser(String.valueOf(message.getSenderId()), payload);
     }
 
-    /**
-     * 方法说明：getMessages
-     * 1. 负责处理 getMessages 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public List<ChatMessage> getMessages(Long userId, Long otherId) {
         LambdaQueryWrapper<ChatMessage> wrapper = new LambdaQueryWrapper<>();
         wrapper.and(w -> w
@@ -105,12 +86,6 @@ public class ChatService {
         return messages;
     }
 
-    /**
-     * 方法说明：getSessions
-     * 1. 负责处理 getSessions 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public List<ChatSession> getSessions(Long userId, Integer role) {
         LambdaQueryWrapper<ChatSession> wrapper = new LambdaQueryWrapper<>();
         if (role == 1) {
@@ -133,13 +108,7 @@ public class ChatService {
         return sessions;
     }
 
-    /**
-     * 方法说明：updateSession
-     * 1. 负责处理 updateSession 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
-    private void updateSession(ChatMessage message) {
+        private void updateSession(ChatMessage message) {
         User sender = userMapper.selectById(message.getSenderId());
         User receiver = userMapper.selectById(message.getReceiverId());
 

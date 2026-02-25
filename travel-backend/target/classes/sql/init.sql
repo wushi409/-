@@ -1,3 +1,4 @@
+-- init 相关 SQL，先保证语句正确，后面再做性能优化。
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS travel_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE travel_db;

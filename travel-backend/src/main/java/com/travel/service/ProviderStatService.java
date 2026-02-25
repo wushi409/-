@@ -8,7 +8,6 @@ import com.travel.mapper.TravelOrderMapper;
 import com.travel.mapper.TravelProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,12 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 类说明：ProviderStatService
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @Service
 @RequiredArgsConstructor
 public class ProviderStatService {
@@ -31,12 +24,6 @@ public class ProviderStatService {
     private final TravelProductMapper productMapper;
     private final DailyStockService dailyStockService;
 
-    /**
-     * 方法说明：overview
-     * 1. 负责处理 overview 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public Map<String, Object> overview(Long providerId) {
         Map<String, Object> data = new HashMap<>();
         Long productCount = productMapper.selectCount(new LambdaQueryWrapper<TravelProduct>()
@@ -63,12 +50,6 @@ public class ProviderStatService {
         return data;
     }
 
-    /**
-     * 方法说明：orderTrend
-     * 1. 负责处理 orderTrend 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public List<Map<String, Object>> orderTrend(Long providerId, Integer days) {
         int window = (days == null || days <= 0) ? 30 : days;
         List<Map<String, Object>> result = new ArrayList<>();
@@ -92,12 +73,6 @@ public class ProviderStatService {
         return result;
     }
 
-    /**
-     * 方法说明：hotProducts
-     * 1. 负责处理 hotProducts 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     public List<Map<String, Object>> hotProducts(Long providerId, Integer limit) {
         int topN = (limit == null || limit <= 0) ? 10 : limit;
         List<TravelProduct> products = productMapper.selectList(new LambdaQueryWrapper<TravelProduct>()

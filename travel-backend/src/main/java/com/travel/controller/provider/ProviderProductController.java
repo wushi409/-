@@ -9,12 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 类说明：ProviderProductController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api/provider/products")
 @RequireRole({Constants.ROLE_PROVIDER})
@@ -32,12 +26,6 @@ public class ProviderProductController {
         return Result.success(productService.providerList(providerId, page, size, keyword));
     }
 
-    /**
-     * 方法说明：add
-     * 1. 负责处理 add 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PostMapping
     public Result<?> add(HttpServletRequest request, @RequestBody TravelProduct product) {
         Long providerId = (Long) request.getAttribute("userId");
@@ -65,12 +53,6 @@ public class ProviderProductController {
         return Result.success("status updated");
     }
 
-    /**
-     * 方法说明：delete
-     * 1. 负责处理 delete 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @DeleteMapping("/{id}")
     public Result<?> delete(@PathVariable Long id, HttpServletRequest request) {
         Long providerId = (Long) request.getAttribute("userId");

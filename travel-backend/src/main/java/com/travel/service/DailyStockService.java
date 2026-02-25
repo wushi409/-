@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -23,14 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * 按日库存服务。
- *
- * 作用：
- * 1. 提供服务商按日期维护库存总量与预警阈值；
- * 2. 在订单支付/退款时同步扣减或回补“指定出行日”的可用库存；
- * 3. 为前端提供低库存预警列表与统计指标。
- */
 @Service
 @RequiredArgsConstructor
 public class DailyStockService {

@@ -1,3 +1,7 @@
+/**
+ * 全局异常处理。
+ * 统一把后端异常转成前端可读的错误返回。
+ */
 package com.travel.common.exception;
 
 import com.travel.common.Result;

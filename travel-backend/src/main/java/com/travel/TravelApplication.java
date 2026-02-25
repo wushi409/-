@@ -1,3 +1,7 @@
+/**
+ * SpringBoot 启动类。
+ * 项目从这里启动。
+ */
 package com.travel;
 
 import org.springframework.boot.SpringApplication;

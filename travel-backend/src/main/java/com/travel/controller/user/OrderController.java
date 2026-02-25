@@ -1,3 +1,6 @@
+/**
+ * 游客订单接口：下单、支付、取消、退款申请。
+ */
 package com.travel.controller.user;
 
 import com.travel.common.Constants;
@@ -10,12 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 类说明：OrderController
- * 1. 负责该业务模块的核心流程编排；
- * 2. 通过分层设计保证职责清晰、便于维护；
- * 3. 为上层调用提供稳定、可复用的能力。
- */
 @RestController
 @RequestMapping("/api/orders")
 @RequireRole({Constants.ROLE_USER})
@@ -26,10 +23,12 @@ public class OrderController {
     private final RecommendService recommendService;
 
     /**
-     * 方法说明：create
-     * 1. 负责处理 create 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 下单入口（用户链路）。
+     *
+     * 流程：
+     * 1. 从登录上下文拿 userId；
+     * 2. 调用 service 创建订单（初始状态：待付款）；
+     * 3. 记录一次购买行为，用于后续推荐。
      */
     @PostMapping
     public Result<?> create(HttpServletRequest request, @RequestBody TravelOrder order) {
@@ -51,22 +50,14 @@ public class OrderController {
         return Result.success(orderService.userOrders(userId, page, size, status));
     }
 
-    /**
-     * 方法说明：detail
-     * 1. 负责处理 detail 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @GetMapping("/{id}")
     public Result<?> detail(@PathVariable Long id) {
         return Result.success(orderService.getById(id));
     }
 
     /**
-     * 方法说明：pay
-     * 1. 负责处理 pay 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 支付入口（演示版）。
+     * 当前直接把订单状态改成“已付款”，库存扣减在 service 内联动完成。
      */
     @PutMapping("/{id}/pay")
     public Result<?> pay(@PathVariable Long id) {
@@ -74,12 +65,6 @@ public class OrderController {
         return Result.success("payment success");
     }
 
-    /**
-     * 方法说明：cancel
-     * 1. 负责处理 cancel 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
-     */
     @PutMapping("/{id}/cancel")
     public Result<?> cancel(@PathVariable Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -88,10 +73,8 @@ public class OrderController {
     }
 
     /**
-     * 方法说明：requestRefund
-     * 1. 负责处理 requestRefund 对应的业务逻辑；
-     * 2. 完成参数校验、数据读写与状态变更；
-     * 3. 输出处理结果供控制层或调用方继续使用。
+     * 退款申请入口（用户主动发起）。
+     * 仅把订单推进到“退款中”，最终是否退款由服务商审核决定。
      */
     @PutMapping("/{id}/refund")
     public Result<?> requestRefund(@PathVariable Long id, HttpServletRequest request) {

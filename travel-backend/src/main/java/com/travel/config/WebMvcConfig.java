@@ -1,14 +1,13 @@
 /**
- * MVC 配置类。
- * 主要注册拦截器并统一处理接口权限校验。
+ * MVC 配置：统一注册 JWT 拦截器与静态资源映射。
  */
 package com.travel.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travel.common.Result;
 import com.travel.utils.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerMethod;
@@ -45,15 +44,34 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 
     private class JwtInterceptor implements HandlerInterceptor {
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-            // 放行OPTIONS请求
+        @Override
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+            // 放行跨域预检请求。
             if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
                 return true;
             }
 
-            // 非Controller方法直接放行
+            // 非 Controller 方法（例如静态资源）直接放行。
             if (!(handler instanceof HandlerMethod)) {
+                return true;
+            }
+
+            // 游记广场列表允许匿名访问；若带 token 则尽量解析，仅用于 onlyMine 场景。
+            if ("GET".equalsIgnoreCase(request.getMethod()) && "/api/travel-notes".equals(request.getRequestURI())) {
+                String optionalToken = request.getHeader("Authorization");
+                if (optionalToken != null && optionalToken.startsWith("Bearer ")) {
+                    optionalToken = optionalToken.substring(7);
+                }
+                if (optionalToken != null && !optionalToken.isEmpty()) {
+                    try {
+                        Long userId = jwtUtils.getUserIdFromToken(optionalToken);
+                        Integer role = jwtUtils.getRoleFromToken(optionalToken);
+                        request.setAttribute("userId", userId);
+                        request.setAttribute("role", role);
+                    } catch (Exception ignored) {
+                        // 匿名浏览场景下忽略无效 token，不阻断列表访问。
+                    }
+                }
                 return true;
             }
 
@@ -73,7 +91,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 request.setAttribute("userId", userId);
                 request.setAttribute("role", role);
 
-                // 检查角色权限
+                // 检查接口角色权限。
                 HandlerMethod handlerMethod = (HandlerMethod) handler;
                 RequireRole requireRole = handlerMethod.getMethodAnnotation(RequireRole.class);
                 if (requireRole == null) {

@@ -328,6 +328,60 @@ CREATE TABLE IF NOT EXISTS review (
     ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS travel_note (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  order_id BIGINT,
+  title VARCHAR(120) NOT NULL,
+  destination_name VARCHAR(100) NOT NULL,
+  travel_date DATE,
+  content TEXT NOT NULL,
+  tags TEXT COMMENT 'JSON array',
+  images TEXT COMMENT 'JSON array',
+  rating TINYINT DEFAULT 5 COMMENT '1-5',
+  status TINYINT DEFAULT 1 COMMENT '0-hidden 1-published',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_travel_note_user (user_id),
+  INDEX idx_travel_note_order (order_id),
+  INDEX idx_travel_note_create_time (create_time),
+  CONSTRAINT fk_travel_note_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_travel_note_order
+    FOREIGN KEY (order_id) REFERENCES travel_order(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS order_change_request (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_id BIGINT NOT NULL,
+  order_no VARCHAR(50) NOT NULL,
+  product_title VARCHAR(200),
+  provider_id BIGINT NOT NULL,
+  provider_name VARCHAR(50),
+  user_id BIGINT NOT NULL,
+  user_name VARCHAR(50),
+  expected_date DATE,
+  reason VARCHAR(500) NOT NULL,
+  status TINYINT DEFAULT 0 COMMENT '0-pending 1-approved 2-rejected',
+  review_remark VARCHAR(255),
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at DATETIME,
+  INDEX idx_change_request_order (order_id),
+  INDEX idx_change_request_provider (provider_id),
+  INDEX idx_change_request_user (user_id),
+  CONSTRAINT fk_change_request_order
+    FOREIGN KEY (order_id) REFERENCES travel_order(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_change_request_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_change_request_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS banner (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(100),

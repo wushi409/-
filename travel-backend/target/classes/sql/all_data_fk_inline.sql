@@ -328,6 +328,60 @@ CREATE TABLE IF NOT EXISTS review (
     ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS travel_note (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  order_id BIGINT,
+  title VARCHAR(120) NOT NULL,
+  destination_name VARCHAR(100) NOT NULL,
+  travel_date DATE,
+  content TEXT NOT NULL,
+  tags TEXT COMMENT 'JSON array',
+  images TEXT COMMENT 'JSON array',
+  rating TINYINT DEFAULT 5 COMMENT '1-5',
+  status TINYINT DEFAULT 1 COMMENT '0-hidden 1-published',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_travel_note_user (user_id),
+  INDEX idx_travel_note_order (order_id),
+  INDEX idx_travel_note_create_time (create_time),
+  CONSTRAINT fk_travel_note_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_travel_note_order
+    FOREIGN KEY (order_id) REFERENCES travel_order(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS order_change_request (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_id BIGINT NOT NULL,
+  order_no VARCHAR(50) NOT NULL,
+  product_title VARCHAR(200),
+  provider_id BIGINT NOT NULL,
+  provider_name VARCHAR(50),
+  user_id BIGINT NOT NULL,
+  user_name VARCHAR(50),
+  expected_date DATE,
+  reason VARCHAR(500) NOT NULL,
+  status TINYINT DEFAULT 0 COMMENT '0-pending 1-approved 2-rejected',
+  review_remark VARCHAR(255),
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at DATETIME,
+  INDEX idx_change_request_order (order_id),
+  INDEX idx_change_request_provider (provider_id),
+  INDEX idx_change_request_user (user_id),
+  CONSTRAINT fk_change_request_order
+    FOREIGN KEY (order_id) REFERENCES travel_order(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_change_request_provider
+    FOREIGN KEY (provider_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_change_request_user
+    FOREIGN KEY (user_id) REFERENCES sys_user(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS banner (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(100),
@@ -340,18 +394,18 @@ CREATE TABLE IF NOT EXISTS banner (
 
 -- ===== Seed Data =====
 INSERT INTO sys_user (username, password, nickname, role, status) VALUES
-('admin', '$2a$10$IPUN91ncI5s6o8ISoF8BTut8y0twoHexN5jcEO2yJkDIpST04L6fi', '系统管理员', 0, 1);
+('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '系统管理员', 0, 1);
 
 -- 测试游客账号 (密码: 123456)
 INSERT INTO sys_user (username, password, nickname, phone, role, status) VALUES
-('user1', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '张三', '13800138001', 1, 1),
-('user2', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '李四', '13800138002', 1, 1),
-('user3', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '王五', '13800138003', 1, 1);
+('user1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '张三', '13800138001', 1, 1),
+('user2', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '李四', '13800138002', 1, 1),
+('user3', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '王五', '13800138003', 1, 1);
 
 -- 测试服务商账号 (密码: 123456)
 INSERT INTO sys_user (username, password, nickname, phone, role, status) VALUES
-('provider1', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '阳光旅行社', '13900139001', 2, 1),
-('provider2', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '环球旅游', '13900139002', 2, 1);
+('provider1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '阳光旅行社', '13900139001', 2, 1),
+('provider2', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '环球旅游', '13900139002', 2, 1);
 
 -- 目的地数据
 INSERT INTO destination (name, province, city, description, hot_score, longitude, latitude) VALUES
@@ -743,18 +797,18 @@ INSERT INTO travel_product (provider_id, title, description, destination_id, dur
 
 INSERT INTO sys_user (username, password, nickname, phone, email, role, status) VALUES
 -- 更多游客用户（role = 1）
-('user4', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '赵六', '13800138004', 'user4@test.com', 1, 1),
-('user5', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '钱七', '13800138005', 'user5@test.com', 1, 1),
-('user6', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '孙八', '13800138006', 'user6@test.com', 1, 1),
-('user7', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '周九', '13800138007', 'user7@test.com', 1, 1),
-('user8', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '吴十', '13800138008', 'user8@test.com', 1, 1),
-('traveler01', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '旅行达人小明', '15900001001', 'xiaoming@travel.com', 1, 1),
-('traveler02', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '爱旅游的小红', '15900001002', 'xiaohong@travel.com', 1, 1),
-('photographer', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '摄影师老王', '15900001003', 'wang@photo.com', 1, 1),
+('user4', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '赵六', '13800138004', 'user4@test.com', 1, 1),
+('user5', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '钱七', '13800138005', 'user5@test.com', 1, 1),
+('user6', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '孙八', '13800138006', 'user6@test.com', 1, 1),
+('user7', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '周九', '13800138007', 'user7@test.com', 1, 1),
+('user8', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '吴十', '13800138008', 'user8@test.com', 1, 1),
+('traveler01', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '旅行达人小明', '15900001001', 'xiaoming@travel.com', 1, 1),
+('traveler02', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '爱旅游的小红', '15900001002', 'xiaohong@travel.com', 1, 1),
+('photographer', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '摄影师老王', '15900001003', 'wang@photo.com', 1, 1),
 -- 更多服务商用户（role = 2）
-('provider3', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '海南岛旅行社', '13900139003', 'hainan@travel.com', 2, 1),
-('provider4', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '云南印象旅游', '13900139004', 'yunnan@travel.com', 2, 1),
-('provider5', '$2a$10$US9dRJnLeqXd1SxMCU7fRePRwGcPPQxNyfai6BnNlaVcJoTI.zNAu', '江南水乡游', '13900139005', 'jiangnan@travel.com', 2, 1);
+('provider3', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '海南岛旅行社', '13900139003', 'hainan@travel.com', 2, 1),
+('provider4', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '云南印象旅游', '13900139004', 'yunnan@travel.com', 2, 1),
+('provider5', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '江南水乡游', '13900139005', 'jiangnan@travel.com', 2, 1);
 
 -- =====================================================
 -- 用户行为数据（协同过滤推荐需要）
@@ -935,5 +989,8 @@ INSERT INTO provider_qualification (user_id, company_name, license_no, contact_p
 (17, '江南水乡旅游服务公司', 'L-JS-CJ00001', '林经理', '13900139005', 1);
 
 SELECT '轮播图、服务商资质和新目的地数据插入完成！' AS message;
+
+
+
 
 

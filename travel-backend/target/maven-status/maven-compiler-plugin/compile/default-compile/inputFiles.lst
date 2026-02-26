@@ -11,6 +11,7 @@ D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\service\RecommendServ
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\service\TransportService.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\mapper\TransportMapper.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\user\ProductController.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\user\TravelNoteController.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\ProductDailyStock.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\UserBehavior.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\service\TripPlannerService.java
@@ -36,6 +37,7 @@ D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\common\exception\Busi
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\admin\AdminResourceController.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\user\DestinationController.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\provider\ProviderOrderController.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\TravelNote.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\common\Result.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\TravelApplication.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\admin\AdminStatController.java
@@ -44,8 +46,11 @@ D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\utils\JwtUtils.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\service\UserRouteService.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\common\Constants.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\provider\ProviderQualificationController.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\service\ChangeRequestService.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\user\ChangeRequestController.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\User.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\mapper\ProviderQualificationMapper.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\mapper\OrderChangeRequestMapper.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\Banner.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\service\AttractionService.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\Hotel.java
@@ -60,10 +65,13 @@ D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\ProviderQualif
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\config\RequireRole.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\admin\AdminUserController.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\CustomPlan.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\service\TravelNoteService.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\user\UserRouteController.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\OrderChangeRequest.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\mapper\UserBehaviorMapper.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\UserFavorite.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\mapper\ChatSessionMapper.java
+D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\mapper\TravelNoteMapper.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\config\WebSocketConfig.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\controller\user\CustomRequestController.java
 D:\毕设\旅游\毕设1\travel-backend\src\main\java\com\travel\entity\ChatMessage.java

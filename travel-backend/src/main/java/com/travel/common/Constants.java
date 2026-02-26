@@ -1,6 +1,5 @@
 /**
- * Constants 公共类。
- * 放统一返回结构、常量或通用异常定义。
+ * 全局常量定义。
  */
 package com.travel.common;
 
@@ -14,7 +13,7 @@ public class Constants {
     public static final int STATUS_DISABLED = 0;
     public static final int STATUS_ENABLED = 1;
 
-    // 审核状态
+    // 资质审核状态
     public static final int AUDIT_PENDING = 0;
     public static final int AUDIT_APPROVED = 1;
     public static final int AUDIT_REJECTED = 2;
@@ -27,6 +26,14 @@ public class Constants {
     public static final int ORDER_CANCELLED = 4;
     public static final int ORDER_REFUNDING = 5;
     public static final int ORDER_REFUNDED = 6;
+
+    // 行程变更申请状态
+    public static final int CHANGE_REQUEST_PENDING = 0;
+    public static final int CHANGE_REQUEST_APPROVED = 1;
+    public static final int CHANGE_REQUEST_REJECTED = 2;
+
+    // 游记状态
+    public static final int TRAVEL_NOTE_PUBLISHED = 1;
 
     // 用户行为类型
     public static final int BEHAVIOR_VIEW = 0;
